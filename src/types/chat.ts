@@ -13,10 +13,18 @@ export interface Attachment {
   url: string;
 }
 
+export interface DatabaseItem {
+  id: string;
+  name: string;
+  description: string;
+  type?: string;
+}
+
 export interface ChatHistory {
   id: string;
   title: string;
   messages: Message[];
+  selectedDatabase?: DatabaseItem | null;
   updatedAt: Date;
 }
 
@@ -24,6 +32,7 @@ export interface ChatRequest {
   message: string;
   attachments: File[];
   context: Message[];
+  dbId?: string;
 }
 
 export interface ChatResponse {
