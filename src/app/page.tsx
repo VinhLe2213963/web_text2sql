@@ -255,7 +255,9 @@ function MessageBubble({ message }: { message: Message }) {
           message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-white border border-gray-200 text-gray-800'
         }`}
       >
-        <div className="whitespace-pre-wrap">{message.content}</div>
+        <div className={`whitespace-pre-wrap no-scrollbar ${message.role === 'assistant' ? 'overflow-x-auto max-w-full' : ''}`}>
+          {message.content}
+        </div>
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 space-y-2">
             {message.attachments.map((attachment, index) => (
