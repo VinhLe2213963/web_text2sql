@@ -1,4 +1,4 @@
-import type { ChatRequest, ChatResponse, DatabaseItem } from '@/types/chat';
+import type { ChatRequest, ChatResponse } from '@/types/chat';
 
 class ChatAPI {
   private baseURL = 'http://localhost:5000';
@@ -94,31 +94,6 @@ class ChatAPI {
     } catch (error) {
       console.error('Chat API error:', error);
       throw new Error('Failed to send message');
-    }
-  }
-
-  async searchDatabases(query: string): Promise<DatabaseItem[]> {
-    try {
-      // const response = await fetch(`${this.baseURL}/databases/search?q=${encodeURIComponent(query)}`, {
-      //   method: 'GET',
-      // });
-
-      // if (!response.ok) {
-      //   throw new Error(`HTTP error! status: ${response.status}`);
-      // }
-
-      const MOCK_DATABASES: DatabaseItem[] = [
-        { id: '1', name: 'Customer DB', description: 'Customer information database' },
-        { id: '2', name: 'Orders DB', description: 'Order history and details' },
-        { id: '3', name: 'Products DB', description: 'Product catalog' },
-        { id: '4', name: 'Inventory DB', description: 'Stock management' },
-      ];
-
-      // const data = await response.json();
-      return MOCK_DATABASES;
-    } catch (error) {
-      console.error('Database search error:', error);
-      throw new Error('Failed to search databases');
     }
   }
 

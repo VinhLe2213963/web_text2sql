@@ -14,6 +14,8 @@ import type { Message } from '@/types/chat';
 export default function ChatBox() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
+  const [validationMessage, setValidationMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
@@ -37,33 +39,16 @@ export default function ChatBox() {
     initializeChat,
   } = useChat();
 
-  const {
-    dbSearchQuery,
-    dbSearchResults,
-    isDbSearching,
-    showDbSuggestions,
-    selectedDatabase: dbSelectedDatabase,
-    dbSearchRef,
-    dbSuggestionsRef,
-    handleDatabaseSelect,
-    clearDatabaseSelection,
-    handleDbSearchFocus,
-    handleDbSearchChange,
-    setDatabaseProgrammatically,
-  } = useDatabaseSearch();
+  const { dbId, handleDbIdChange, clearDbId } = useDatabaseSearch();
 
-  // Sync database selection between hooks
+  // Update selected database based on dbId
   useEffect(() => {
-    if (selectedDatabase !== dbSelectedDatabase) {
-      setDatabaseProgrammatically(selectedDatabase);
+    if (dbId.trim()) {
+      setSelectedDatabase({ id: dbId, name: dbId, description: '' });
+    } else {
+      setSelectedDatabase(null);
     }
-  }, [selectedDatabase]);
-
-  useEffect(() => {
-    if (dbSelectedDatabase !== selectedDatabase) {
-      setSelectedDatabase(dbSelectedDatabase);
-    }
-  }, [dbSelectedDatabase]);
+  }, [dbId, setSelectedDatabase]);
 
   useEffect(() => {
     initializeChat();
@@ -104,16 +89,56 @@ export default function ChatBox() {
     return <FileText className="w-4 h-4" />;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    sendMessage();
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (!dbId.trim()) {
+      setValidationMessage('Database ID is required to send messages');
+      setTimeout(() => setValidationMessage(''), 3000);
+      return;
+    }
+    setValidationMessage('');
+
+    try {
+      await sendMessage();
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : 'Failed to send message');
+      setTimeout(() => setErrorMessage(''), 5000);
     }
   };
 
   return (
     <div className="flex h-screen bg-gray-50">
+      {/* Validation Toast Notification */}
+      {validationMessage && (
+        <div className="fixed top-4 right-4 z-50 bg-amber-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 animate-in slide-in-from-top-2 fade-in-0 duration-300">
+          {/* <X className="w-4 h-4" /> */}
+          <span className="text-sm">{validationMessage}</span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => setValidationMessage('')}
+            className="h-6 w-6 p-0 hover:bg-amber-600 text-white"
+          >
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      )}
+
+      {/* Error Toast Notification */}
+      {errorMessage && (
+        <div className="fixed top-16 right-4 z-50 bg-red-500 text-white px-4 py-2 rounded-lg shadow-lg flex items-center space-x-2 animate-in slide-in-from-top-2 fade-in-0 duration-300">
+          <X className="w-4 h-4" />
+          <span className="text-sm">{errorMessage}</span>
+          <Button type="button" variant="ghost" size="sm" onClick={() => setErrorMessage('')} className="h-6 w-6 p-0 hover:bg-red-600 text-white">
+            <X className="w-3 h-3" />
+          </Button>
+        </div>
+      )}
+
       <ChatSidebar
         isOpen={sidebarOpen}
         chatHistories={filteredChatHistories}
@@ -134,10 +159,10 @@ export default function ChatBox() {
               </Button>
               <h1 className="text-xl font-semibold text-gray-800">{currentChat?.title || 'AI Assistant'}</h1>
             </div>
-            {selectedDatabase && (
+            {dbId && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
                 <Database className="w-4 h-4" />
-                <span>Using: {selectedDatabase.name}</span>
+                <span>Using: {dbId}</span>
               </div>
             )}
           </div>
@@ -151,9 +176,9 @@ export default function ChatBox() {
                 <ImageIcon className="w-12 h-12 mx-auto mb-4 opacity-50" />
                 <h2 className="text-xl font-medium mb-2">Start a conversation</h2>
                 <p>Ask me anything or upload files to get started!</p>
-                {selectedDatabase && (
+                {dbId && (
                   <p className="mt-2 text-sm">
-                    Using: <span className="font-medium">{selectedDatabase.name}</span>
+                    Using: <span className="font-medium">{dbId}</span>
                   </p>
                 )}
               </div>
@@ -192,20 +217,7 @@ export default function ChatBox() {
             <form onSubmit={handleSubmit} className="flex items-end space-x-2">
               <div className="flex-1">
                 <div className="flex items-end space-x-2">
-                  <DatabaseSearch
-                    searchQuery={dbSearchQuery}
-                    searchResults={dbSearchResults}
-                    selectedDatabase={selectedDatabase}
-                    isSearching={isDbSearching}
-                    showSuggestions={showDbSuggestions}
-                    isLoading={isLoading}
-                    searchRef={dbSearchRef}
-                    suggestionsRef={dbSuggestionsRef}
-                    onSearchChange={handleDbSearchChange}
-                    onSearchFocus={handleDbSearchFocus}
-                    onDatabaseSelect={handleDatabaseSelect}
-                    onClearSelection={clearDatabaseSelection}
-                  />
+                  <DatabaseSearch dbId={dbId} isLoading={isLoading} onDbIdChange={handleDbIdChange} onClearDbId={clearDbId} />
 
                   <Button type="button" variant="ghost" size="sm" onClick={() => fileInputRef.current?.click()}>
                     <Paperclip className="w-4 h-4" />
