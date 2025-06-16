@@ -1,7 +1,7 @@
 import type { ChatRequest, ChatResponse } from '@/types/chat';
 
 class ChatAPI {
-  private baseURL = 'http://localhost:5000';
+  private baseURL = 'https://legendary-space-tribble-x5r7rw5696q7h97wv-5000.app.github.dev';
 
   async sendMessage(request: ChatRequest, options: { maxContext?: number; maxLength?: number }): Promise<ChatResponse> {
     try {

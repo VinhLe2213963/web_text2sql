@@ -39,7 +39,7 @@ export default function ChatBox() {
     initializeChat,
   } = useChat();
 
-  const { dbId, handleDbIdChange, clearDbId } = useDatabaseSearch();
+  const { dbId, handleDbIdChange, clearDbId, setDbId } = useDatabaseSearch();
 
   // Update selected database based on dbId
   useEffect(() => {
@@ -49,6 +49,13 @@ export default function ChatBox() {
       setSelectedDatabase(null);
     }
   }, [dbId, setSelectedDatabase]);
+
+  // Auto-fill dbId when chat is loaded
+  useEffect(() => {
+    if (currentChat && currentChat.selectedDatabase) {
+      setDbId(currentChat.selectedDatabase.id);
+    }
+  }, [currentChat, setDbId]);
 
   useEffect(() => {
     initializeChat();
@@ -255,9 +262,11 @@ function MessageBubble({ message }: { message: Message }) {
           message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-white border border-gray-200 text-gray-800'
         }`}
       >
-        <div className={`whitespace-pre-wrap no-scrollbar ${message.role === 'assistant' ? 'overflow-x-auto max-w-full' : ''}`}>
-          {message.content}
-        </div>
+        {message.role === 'assistant' ? (
+          <pre className="whitespace-pre overflow-x-auto max-w-full text-sm no-scrollbar">{message.content}</pre>
+        ) : (
+          <pre className="whitespace-pre-wrap overflow-x-auto max-w-full text-sm no-scrollbar">{message.content}</pre>
+        )}
         {message.attachments && message.attachments.length > 0 && (
           <div className="mt-2 space-y-2">
             {message.attachments.map((attachment, index) => (

@@ -15,5 +15,6 @@ export function useDatabaseSearch() {
     dbId,
     handleDbIdChange,
     clearDbId,
+    setDbId,
   };
 }
